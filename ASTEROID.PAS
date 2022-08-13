@@ -1,4 +1,4 @@
-uses crt,keyboard,sencos;
+uses crt,keyboard;
 
 const
      marge_dalt=20;
