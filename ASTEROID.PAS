@@ -9,6 +9,7 @@ const
      max_ornis=15;
      velocitat=2;
      velocitat_max=6;
+     max_bales=3;
 type
     ipunt=RECORD r,angle:real; END;
     punt=RECORD x,y:integer; END;
@@ -25,6 +26,7 @@ type
                    velocitat:real;
                    n:byte;
                    drotacio,rotacio:real;
+                   esta:boolean;
     END;
 
 
@@ -39,6 +41,7 @@ var nau:triangle;pol:poligon;
     puntaux:punt;
     orni:array [1..max_ornis] of poligon;
     virt:^pvirt;
+    bales:array [1..max_bales] of poligon;
 
 procedure volca;
 var i:word;
@@ -289,6 +292,21 @@ begin
      orni.rotacio:=orni.rotacio+orni.drotacio;
 end;
 
+procedure mou_bales(var orni:poligon);
+var dx,dy:real;
+begin
+     orni.angle:=orni.angle{+(random(256)/512)*(random(3)-1)};
+     Dy:=round(orni.velocitat*sin(orni.angle-pi/2))+orni.centre.y;
+     Dx:=round(orni.velocitat*cos(orni.angle-pi/2))+orni.centre.x;
+     if (dy>marge_dalt) and (dy<marge_baix) then
+        orni.centre.y:=round(Dy)
+     else {orni.angle:=orni.angle+(random(256)/512)*(random(3)-1)}orni.esta:=false;
+
+     if (dx>marge_esq) and (dx<marge_dret) then
+        orni.centre.x:=round(Dx)
+     else {orni.angle:=orni.angle+(random(256)/512)*(random(3)-1)}orni.esta:=false;;
+end;
+
 var itocado:word;
     chatarra_cosmica:poligon;
 
@@ -359,6 +377,18 @@ begin
            if teclapuls(KEYarrowup) then begin
               if nau.velocitat<velocitat_max then nau.velocitat:=nau.velocitat+0.2;
            end;
+           if teclapuls(KEYspace)and(bales[1].esta=false) then begin
+              bales[1].esta:=true;
+              bales[1].centre.x:=nau.centre.x;
+              bales[1].centre.y:=nau.centre.y;
+              bales[1].n:=2;
+              bales[1].velocitat:=7;
+              bales[1].ipuntx[1].r:=10;
+              bales[1].ipuntx[1].angle:=pi/2+nau.angle;
+              bales[1].ipuntx[2].r:=20;
+              bales[1].ipuntx[2].angle:=pi/2+nau.angle;
+              bales[1].angle:=nau.angle;
+           end;
            Dy:=round(nau.velocitat*sin(nau.angle-pi/2))+nau.centre.y;
            Dx:=round(nau.velocitat*cos(nau.angle-pi/2))+nau.centre.x;
            if (dy>marge_dalt) and (dy<marge_baix) then
@@ -384,13 +414,17 @@ begin
            if itocado=0 then aux:=rota_tri(nau,nau.angle,nau.velocitat,1)
            else tocado;
            if (aux=1) then begin inc(itocado);aux:=0;end;
+           if bales[1].esta then begin
+              mou_bales(bales[1]);
+              rota_pol(bales[1],0,1);
+           end;
            waitretrace;
            volca;
 {           if aux=1 then begin {gotoxy(0,0);write('tocado')tocado;delay(200);end;}
            gotoxy(50,24);
            write('¸ Visente i Sergi');
            gotoxy(50,25);
-           write('áETA 2.01 2/6/99');
+           write('áETA 2.2 2/6/99');
      until teclapuls(keyesc);
      desinstalarkb;
      ang:=0;
